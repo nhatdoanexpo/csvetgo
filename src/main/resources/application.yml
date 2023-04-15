@@ -1,0 +1,18 @@
+selenium:
+  headless: false
+server:
+  port: 7171
+logging:
+  file:
+    name: logs/zalo-bot.log
+  logback:
+    rollingpolicy:
+      max-history: 2
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    shutdown:
+      enabled: false
