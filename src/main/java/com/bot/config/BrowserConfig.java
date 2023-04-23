@@ -47,7 +47,7 @@ public class BrowserConfig {
                 "--headless",
 //                "--remote-debugging-port=9222",
                 "--remote-allow-origins=*"));
-        WebDriverManager.getInstance(DriverManagerType.CHROME).setup();
+        WebDriverManager.getInstance(DriverManagerType.CHROMIUM).setup();
     }
 
 
