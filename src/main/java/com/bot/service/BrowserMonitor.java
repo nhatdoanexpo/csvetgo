@@ -9,9 +9,14 @@ import lombok.extern.java.Log;
 
 import org.apache.commons.io.CopyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
+import org.openqa.selenium.support.events.EventFiringWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +85,7 @@ public class BrowserMonitor {
     void handleBrowser() throws IOException {
     	String profileTest = "user_999";
         var driver = browserConfig.getChromeDriver(profileTest);
+        
         //
         // checkProfile(driver, profileTest); 
         
@@ -99,28 +105,17 @@ public class BrowserMonitor {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-            		driver.switchTo().window(tab);  
+            	 	driver.switchTo().window(tab);  
             		 String key = ACTION_KEY+tab;
-            		 tabAddScript.add(tab);
+            		  tabAddScript.add(tab);
             		  log.log(Level.INFO, "chay script addEventListener tab {0}", tab); 
             		  var js = (JavascriptExecutor) driver;
             		  log.log(Level.INFO, "url  tab {0}", driver.getCurrentUrl()); 
-            		  
-                      js.executeScript("localStorage.removeItem(arguments[0]);",key);
-                      var jsScript = """
-                      		document.querySelector('body').addEventListener('CLIENT_IN', function(event) {
-                                   var message = event.detail;"""+
-                                   " var messageOld = localStorage.getItem('"+key+"');"+
-                                   " console.log('vetgoBE da nhan "+key+"',message); "+
-                                   " if(messageOld && JSON.stringify(message) == messageOld){"
-                                   + "message.messageStatus = 'FAIL';"
-                                   + "message.messageError = 'Đang làm cái này chờ tí nhé' +JSON.stringify(messageOld);"
-                                   + "document.querySelector('body').dispatchEvent(new CustomEvent('CLIENT_OUT', { detail: JSON.stringify(message) }));"
-                                   + "}else{"+
-                                   " localStorage.setItem('"+key+"', JSON.stringify(message));}"+
-                             "});";
-                     
-                      js.executeScript(jsScript,key,key); 
+
+            		  js.executeScript("localStorage.removeItem(arguments[0]);",key);  
+            		   System.out.println("delete local"); 
+
+            		  addScriptne(key, js,driver); 
             		
             	}); 
             	
@@ -150,28 +145,9 @@ public class BrowserMonitor {
 						// TODO: handle exception 
 						return;
 					}
-                	if(!tabAddScript.contains(tab)) { 
-                 		  log.log(Level.INFO, "chay script addEventListener tab {0}", tab); 
-                 		  var js = (JavascriptExecutor) driver;
-                 		  log.log(Level.INFO, "url  tab {0}", driver.getCurrentUrl()); 
-                 		  
-                           js.executeScript("localStorage.removeItem(arguments[0]);",key);
-                           var jsScript = """
-                           		document.querySelector('body').addEventListener('CLIENT_IN', function(event) {
-                                        var message = event.detail;"""+
-                                        " var messageOld = localStorage.getItem('"+key+"');"+
-                                        " console.log('vetgoBE da nhan "+key+"',message); "+
-                                        " if(messageOld && JSON.stringify(message) == messageOld){"
-                                        + "message.messageStatus = 'FAIL';"
-                                        + "message.messageError = 'Đang làm cái này chờ tí nhé' +JSON.stringify(messageOld);"
-                                        + "document.querySelector('body').dispatchEvent(new CustomEvent('CLIENT_OUT', { detail: JSON.stringify(message) }));"
-                                        + "}else{"+
-                                        " localStorage.setItem('"+key+"', JSON.stringify(message));}"+
-                                  "});";
-                          
-                           js.executeScript(jsScript,key,key); 
-                           tabAddScript.add(tab);
-       			      }
+                     
+              	    var js = (JavascriptExecutor) driver;  
+              	    addScriptne(key, js, driver); 
                     
                     log.log(Level.INFO, "url  tab {0}", driver.getCurrentUrl()); 
            		    
@@ -202,7 +178,37 @@ public class BrowserMonitor {
     }
 
 
-    private void checkProfile(WebDriver driver, String profileTest) throws IOException {
+	private void addScriptne(String key, JavascriptExecutor js, WebDriver driver ) {
+		try {
+			  WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(60)); // Chờ tối đa 60 giây
+
+			   WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("body")));
+
+			js.executeScript( "vetgo.myCustomFunction(arguments[0]);\n"  ,key);  
+			js.executeScript( "vetgo.myCustomFunction = (key)=>{} ;\n");  
+			    System.out.println("add script nè");
+			  
+		} catch (Exception e) {
+		    System.out.println("add script loi"+ e.getMessage());
+		}
+   
+  
+  
+
+     
+	}
+
+	private void pause(int i) {
+    	try {
+			Thread.sleep(TimeUnit.SECONDS.toMillis(i));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void checkProfile(WebDriver driver, String profileTest) throws IOException {
     	   String emailParent = System.getenv("EMAIL_PARENT");
     	   
            
